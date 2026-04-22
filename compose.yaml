@@ -42,69 +42,118 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # ---------------------------------------------------------------
-  # Node Express Backend  (uncomment when ready)
+  # Node.js Express Backend
   # ---------------------------------------------------------------
-  # node-express:
-  #   build:
-  #     context: ./backend/node-express
-  #     dockerfile: Dockerfile
-  #   container_name: cloud3tier-express
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     MYSQL_HOST: mysql
-  #     MYSQL_PORT: ${MYSQL_PORT}
-  #     MYSQL_USER: ${MYSQL_USER}
-  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
-  #   depends_on:
-  #     mysql:
-  #       condition: service_healthy
+  nodejs:
+    build:
+      context: ./backend/nodejs
+      dockerfile: Dockerfile
+    container_name: cloud3tier-nodejs
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      SECRET_KEY: ${SECRET_KEY:-super-secret-dev-key-change-in-production}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # ---------------------------------------------------------------
-  # Python Django Backend  (uncomment when ready)
+  # Python Django Backend
   # ---------------------------------------------------------------
-  # python-django:
-  #   build:
-  #     context: ./backend/python-django
-  #     dockerfile: Dockerfile
-  #   container_name: cloud3tier-django
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8001:8001"
-  #   environment:
-  #     MYSQL_HOST: mysql
-  #     MYSQL_PORT: ${MYSQL_PORT}
-  #     MYSQL_USER: ${MYSQL_USER}
-  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
-  #   depends_on:
-  #     mysql:
-  #       condition: service_healthy
+  python-django:
+    build:
+      context: ./backend/python-django
+      dockerfile: Dockerfile
+    container_name: cloud3tier-django
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      SECRET_KEY: ${SECRET_KEY:-super-secret-dev-key-change-in-production}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health/live')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # ---------------------------------------------------------------
-  # .NET WebAPI Backend  (uncomment when ready)
+  # .NET WebAPI Backend
   # ---------------------------------------------------------------
-  # dotnet-webapi:
-  #   build:
-  #     context: ./backend/dotnet-webapi
-  #     dockerfile: Dockerfile
-  #   container_name: cloud3tier-dotnet
-  #   restart: unless-stopped
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     MYSQL_HOST: mysql
-  #     MYSQL_PORT: ${MYSQL_PORT}
-  #     MYSQL_USER: ${MYSQL_USER}
-  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
-  #   depends_on:
-  #     mysql:
-  #       condition: service_healthy
+  dotnet-webapi:
+    build:
+      context: ./backend/dotnet-webapi
+      dockerfile: Dockerfile
+    container_name: cloud3tier-dotnet
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      SECRET_KEY: ${SECRET_KEY:-super-secret-dev-key-change-in-production}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:5000/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  
+
+  # ---------------------------------------------------------------
+  # Nginx Reverse Proxy
+  # ---------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: cloud3tier-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      python-fastapi:
+        condition: service_healthy
+      nodejs:
+        condition: service_healthy
+      python-django:
+        condition: service_healthy
+      dotnet-webapi:
+        condition: service_healthy
 
 volumes:
   mysql_data:
