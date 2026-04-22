@@ -1,0 +1,110 @@
+services:
+  # ---------------------------------------------------------------
+  # MySQL Database (shared by all backends)
+  # ---------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: cloud3tier-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/data.sql:/docker-entrypoint-initdb.d/data.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------
+  # Python FastAPI Backend
+  # ---------------------------------------------------------------
+  python-fastapi:
+    build:
+      context: ./backend/python-fastapi
+      dockerfile: Dockerfile
+    container_name: cloud3tier-fastapi
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      SECRET_KEY: ${SECRET_KEY:-super-secret-dev-key-change-in-production}
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------
+  # Node Express Backend  (uncomment when ready)
+  # ---------------------------------------------------------------
+  # node-express:
+  #   build:
+  #     context: ./backend/node-express
+  #     dockerfile: Dockerfile
+  #   container_name: cloud3tier-express
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     MYSQL_HOST: mysql
+  #     MYSQL_PORT: ${MYSQL_PORT}
+  #     MYSQL_USER: ${MYSQL_USER}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+
+  # ---------------------------------------------------------------
+  # Python Django Backend  (uncomment when ready)
+  # ---------------------------------------------------------------
+  # python-django:
+  #   build:
+  #     context: ./backend/python-django
+  #     dockerfile: Dockerfile
+  #   container_name: cloud3tier-django
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8001:8001"
+  #   environment:
+  #     MYSQL_HOST: mysql
+  #     MYSQL_PORT: ${MYSQL_PORT}
+  #     MYSQL_USER: ${MYSQL_USER}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+
+  # ---------------------------------------------------------------
+  # .NET WebAPI Backend  (uncomment when ready)
+  # ---------------------------------------------------------------
+  # dotnet-webapi:
+  #   build:
+  #     context: ./backend/dotnet-webapi
+  #     dockerfile: Dockerfile
+  #   container_name: cloud3tier-dotnet
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5000:5000"
+  #   environment:
+  #     MYSQL_HOST: mysql
+  #     MYSQL_PORT: ${MYSQL_PORT}
+  #     MYSQL_USER: ${MYSQL_USER}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+
+volumes:
+  mysql_data:
