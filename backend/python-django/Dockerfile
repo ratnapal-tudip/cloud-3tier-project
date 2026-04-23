@@ -18,4 +18,6 @@ RUN pip install --no-index --no-cache-dir --find-links=/app -r requirements.txt 
 
 COPY . .
 
+EXPOSE 8001
+
 CMD [ "gunicorn", "myproject.wsgi:application", "--bind", "0.0.0.0:8001" ]
