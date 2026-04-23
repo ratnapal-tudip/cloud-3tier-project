@@ -1,37 +1,21 @@
-# --------- Stage 1: Build ---------
 FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    default-libmysqlclient-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy only requirements first (better caching)
 COPY requirements.txt .
 
-# Install dependencies into a separate location
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+RUN pip wheel -r requirements.txt
 
+# stage 2 
 
-# --------- Stage 2: Runtime ---------
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install only runtime dependencies (NOT dev)
-RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev \
-    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app /app/
 
-# Copy installed Python packages from builder
-COPY --from=builder /install /usr/local
+RUN pip install --no-index --no-cache-dir --find-links=/app -r requirements.txt && rm -rf /app/*.whl
 
-# Copy project code
 COPY . .
 
-EXPOSE 8001
-
-CMD ["gunicorn", "myproject.wsgi:application", "--bind", "0.0.0.0:8001", "--workers", "3"]
+CMD [ "gunicorn", "myproject.wsgi:application", "--bind", "0.0.0.0:8001" ]
