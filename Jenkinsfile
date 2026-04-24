@@ -42,8 +42,8 @@ pipeline {
                     steps {
                         sh '''
                             docker build -t ${REGISTRY}/fastapi:${GIT_COMMIT_SHORT} \
-                                        -t ${REGISTRY}/fastapi:latest \
-                                        -f ./fastapi/Dockerfile ./fastapi
+                                -t ${REGISTRY}/fastapi:latest \
+                                -f backend/python-fastapi/Dockerfile backend/python-fastapi
                         '''
                     }
                 }
@@ -51,8 +51,8 @@ pipeline {
                     steps {
                         sh '''
                             docker build -t ${REGISTRY}/django:${GIT_COMMIT_SHORT} \
-                                        -t ${REGISTRY}/django:latest \
-                                        -f ./django/Dockerfile ./django
+                                -t ${REGISTRY}/django:latest \
+                                -f backend/python-django/Dockerfile backend/python-django
                         '''
                     }
                 }
@@ -60,8 +60,8 @@ pipeline {
                     steps {
                         sh '''
                             docker build -t ${REGISTRY}/node:${GIT_COMMIT_SHORT} \
-                                        -t ${REGISTRY}/node:latest \
-                                        -f ./node/Dockerfile ./node
+                                -t ${REGISTRY}/node:latest \
+                                -f backend/nodejs/Dockerfile backend/nodejs
                         '''
                     }
                 }
@@ -69,8 +69,8 @@ pipeline {
                     steps {
                         sh '''
                             docker build -t ${REGISTRY}/dotnet:${GIT_COMMIT_SHORT} \
-                                        -t ${REGISTRY}/dotnet:latest \
-                                        -f ./dotnet/Dockerfile ./dotnet
+                                -t ${REGISTRY}/dotnet:latest \
+                                -f backend/dotnet-webapi/Dockerfile backend/dotnet-webapi
                         '''
                     }
                 }
