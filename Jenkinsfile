@@ -122,15 +122,15 @@ pipeline {
                         compose.yaml \
                         ratnapalshende2001_gmail_com@${BACKEND_VM_IP}:/home/ratnapalshende2001_gmail_com/
 
-                        ssh -o StrictHostKeyChecking=no ratnapalshende2001_gmail_com@${BACKEND_VM_IP} << EOF
-                            cd /home/ratnapalshende2001_gmail_com
+                        ssh -o StrictHostKeyChecking=no ratnapalshende2001_gmail_com@${BACKEND_VM_IP} << 'EOF'
+        cd /home/ratnapalshende2001_gmail_com
 
-                            gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+                        gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
 
-                            docker compose pull
-                            docker compose up -d --remove-orphans
-                            docker image prune -f
-                        EOF
+        docker compose pull
+        docker compose up -d --remove-orphans
+        docker image prune -f
+        EOF
                     '''
                 }
             }
