@@ -38,7 +38,7 @@ pipeline {
 
         stage('Build Docker Images') {
             parallel {
-                    stage('Build FastAPI') {
+                stage('Build FastAPI') {
                     steps {
                         sh '''
                             docker build -t ${REGISTRY}/fastapi:${GIT_COMMIT_SHORT} \
@@ -47,7 +47,7 @@ pipeline {
                         '''
                     }
                 }
-                    stage('Build Django') {
+                stage('Build Django') {
                     steps {
                         sh '''
                             docker build -t ${REGISTRY}/django:${GIT_COMMIT_SHORT} \
@@ -56,7 +56,7 @@ pipeline {
                         '''
                     }
                 }
-                    stage('Build Node') {
+                stage('Build Node') {
                     steps {
                         sh '''
                             docker build -t ${REGISTRY}/node:${GIT_COMMIT_SHORT} \
@@ -65,7 +65,7 @@ pipeline {
                         '''
                     }
                 }
-                    stage('Build .NET') {
+                stage('Build .NET') {
                     steps {
                         sh '''
                             docker build -t ${REGISTRY}/dotnet:${GIT_COMMIT_SHORT} \
@@ -77,9 +77,9 @@ pipeline {
             }
         }
 
-            stage('Push to Artifact Registry') {
+        stage('Push to Artifact Registry') {
             parallel {
-                    stage('Push FastAPI') {
+                stage('Push FastAPI') {
                     steps {
                         sh '''
                             docker push ${REGISTRY}/fastapi:${GIT_COMMIT_SHORT}
@@ -87,7 +87,7 @@ pipeline {
                         '''
                     }
                 }
-                    stage('Push Django') {
+                stage('Push Django') {
                     steps {
                         sh '''
                             docker push ${REGISTRY}/django:${GIT_COMMIT_SHORT}
@@ -95,7 +95,7 @@ pipeline {
                         '''
                     }
                 }
-                    stage('Push Node') {
+                stage('Push Node') {
                     steps {
                         sh '''
                             docker push ${REGISTRY}/node:${GIT_COMMIT_SHORT}
@@ -103,7 +103,7 @@ pipeline {
                         '''
                     }
                 }
-                    stage('Push .NET') {
+                stage('Push .NET') {
                     steps {
                         sh '''
                             docker push ${REGISTRY}/dotnet:${GIT_COMMIT_SHORT}
@@ -122,15 +122,15 @@ pipeline {
                         compose.yaml \
                         ratnapalshende2001_gmail_com@${BACKEND_VM_IP}:/home/ratnapalshende2001_gmail_com/
 
-                        ssh -o StrictHostKeyChecking=no ratnapalshende2001_gmail_com@${BACKEND_VM_IP} << 'EOF'
-        cd /home/ratnapalshende2001_gmail_com
+                        ssh -o StrictHostKeyChecking=no ratnapalshende2001_gmail_com@${BACKEND_VM_IP} << EOF
+cd /home/ratnapalshende2001_gmail_com
 
-                        gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
 
-        docker compose pull
-        docker compose up -d --remove-orphans
-        docker image prune -f
-        EOF
+docker compose pull
+docker compose up -d --remove-orphans
+docker image prune -f
+EOF
                     '''
                 }
             }
@@ -154,5 +154,4 @@ pipeline {
             }
         }
     }
-
 }
