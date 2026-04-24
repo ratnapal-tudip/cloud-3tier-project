@@ -1,0 +1,17 @@
+defaultService: https://www.googleapis.com/compute/v1/projects/ratnapal-project/global/backendBuckets/frontend-backend-bucket
+
+hostRules:
+- hosts:
+  - '*'
+  pathMatcher: allpaths
+
+pathMatchers:
+- name: allpaths
+  defaultService: https://www.googleapis.com/compute/v1/projects/ratnapal-project/global/backendBuckets/frontend-backend-bucket
+
+  pathRules:
+  - paths:
+    - /health
+    - /api/*
+    - /api
+    service: https://www.googleapis.com/compute/v1/projects/ratnapal-project/global/backendServices/backend-vm-service

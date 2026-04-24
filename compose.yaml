@@ -1,32 +1,45 @@
 services:
-  fastapi:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - python-fastapi
+      - python-django
+      - nodejs
+      - dotnet-webapi
+    restart: unless-stopped
+
+  python-fastapi:
     image: us-central1-docker.pkg.dev/ratnapal-project/ratnapal-images/fastapi:latest
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     env_file:
       - .env
     restart: unless-stopped
 
-  django:
+  python-django:
     image: us-central1-docker.pkg.dev/ratnapal-project/ratnapal-images/django:latest
-    ports:
-      - "8001:8000"
+    expose:
+      - "8001"
     env_file:
       - .env
     restart: unless-stopped
 
-  node:
+  nodejs:
     image: us-central1-docker.pkg.dev/ratnapal-project/ratnapal-images/node:latest
-    ports:
-      - "8002:3000"
+    expose:
+      - "3000"
     env_file:
       - .env
     restart: unless-stopped
 
-  dotnet:
+  dotnet-webapi:
     image: us-central1-docker.pkg.dev/ratnapal-project/ratnapal-images/dotnet:latest
-    ports:
-      - "8003:80"
+    expose:
+      - "5000"
     env_file:
       - .env
     restart: unless-stopped
