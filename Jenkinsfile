@@ -119,8 +119,6 @@ pipeline {
                 dir('frontend') {
                     sh '''
                         echo "Building React frontend..."
-                        # Source nvm to make node and npm available
-                        . "$HOME/.nvm/nvm.sh"
                         
                         npm install
                         npm run build
