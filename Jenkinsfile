@@ -120,6 +120,12 @@ pipeline {
                     sh '''
                         echo "Building React frontend..."
                         
+                        # Fetch the dynamic Load Balancer IP
+                        LB_IP=$(gcloud compute addresses describe ratnapal-lb-ip --global --format="value(address)" --project=${PROJECT_ID})
+                        export VITE_API_BASE_URL="http://${LB_IP}"
+                        
+                        echo "Using API Base URL: ${VITE_API_BASE_URL}"
+                        
                         npm install
                         npm run build
                         
