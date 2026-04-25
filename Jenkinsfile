@@ -114,6 +114,31 @@ pipeline {
             }
         }
 
+        stage('Build & Deploy Frontend') {
+            steps {
+                dir('frontend') {
+                    sh '''
+                        echo "Building React frontend..."
+                        # Source nvm to make node and npm available
+                        . "$HOME/.nvm/nvm.sh"
+                        
+                        npm install
+                        npm run build
+                        
+                        # Upload to GCS Bucket (acting as S3 for GCP)
+                        if [ -d "build" ]; then
+                            gsutil -m rsync -R build/ gs://${PROJECT_ID}-react-frontend/
+                        elif [ -d "dist" ]; then
+                            gsutil -m rsync -R dist/ gs://${PROJECT_ID}-react-frontend/
+                        else
+                            echo "Build directory not found! Expected 'build' or 'dist'."
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
+
         stage('Deploy to Backend VM') {
             steps {
                 sshagent(['backend-vm-ssh-key']) {
